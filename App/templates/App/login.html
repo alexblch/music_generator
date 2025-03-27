@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Connexion</h1>
+    {% if error %}
+        <p style="color:red">{{ error }}</p>
+    {% endif %}
+    <form action="" method="post">
+        {% csrf_token %}
+        <label for="my_username">Nom d'utilisateur</label>
+        <input type="username" name="my_email"> <br>
+        <label for="my_password">Mot de passe:</label>
+        <input type="password" name="my_password"> <br>
+        <button type="submit">Se connecter</button>
+    </form>
+    <p>Pas de compte ? <a href="{% url 'register' %}">Enregistrez-vous</a></p>
+</body>
+</html>

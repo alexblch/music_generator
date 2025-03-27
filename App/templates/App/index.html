@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bienvenue</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="text-xl font-semibold text-indigo-600">Accueil</div>
+      <div>
+        <a href="{% url 'login' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">Se connecter</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenu style page Word -->
+  <main class="flex-1 flex justify-center items-start mt-10 px-4">
+    <div class="bg-white shadow-lg rounded-xl p-10 w-full max-w-[794px] text-center"> <!-- A4 = 794px de large -->
+      <h1 class="text-4xl font-bold text-indigo-600 mb-6">Bienvenue sur notre site 🎉</h1>
+      <p class="text-gray-700 text-lg leading-relaxed">
+        Nous sommes ravis de vous accueillir ici. Ce projet Django est en cours de développement, 
+        mais il commence déjà à prendre forme. <br><br>
+        N’hésitez pas à explorer, et restez connectés pour de nouvelles fonctionnalités très bientôt !
+      </p>
+    </div>
+  </main>
+
+</body>
+</html>
