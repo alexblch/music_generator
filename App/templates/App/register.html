@@ -1,20 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>S'enregistrer</h1>
-    <form action="" method="post">
+{% extends 'base.html' %}
+
+{% block title %}S'authentifier{% endblock %}
+
+{% block content %}
+  <div class="flex justify-center mt-16">
+    <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+      <h1 class="text-2xl font-bold text-center text-indigo-600 mb-6">Inscription</h1>
+
+      {% if error %}
+        <p class="text-red-600 text-center mb-4">{{ error }}</p>
+      {% endif %}
+
+      <form method="POST" class="space-y-4">
         {% csrf_token %}
-        <label for="my_username">Nom d'utilisateur:</label>
-        <input type="text" name="my_username"> <br>
-        <label for="my_password">Mot de passe:</label>
-        <input type="password" name="my_password"> <br>
-        <button type="submit">Se connecter</button>
-    </form>
-    <p>Déjà un compte ? <a href="{% url 'login' %}">Connectez-vous</a></p>
-</body>
-</html>
+
+        <div>
+          <label for="first_name" class="block text-sm font-medium text-gray-700">Prénom</label>
+          <input type="text" name="first_name" id="first_name" class="w-full border rounded px-3 py-2" required>
+        </div>
+
+        <div>
+          <label for="last_name" class="block text-sm font-medium text-gray-700">Nom</label>
+          <input type="text" name="last_name" id="last_name" class="w-full border rounded px-3 py-2" required>
+        </div>
+
+        <div>
+          <label for="my_username" class="block text-sm font-medium text-gray-700">Nom d'utilisateur</label>
+          <input type="text" name="my_username" id="my_username" class="w-full border rounded px-3 py-2" required>
+        </div>
+
+        <div>
+          <label for="my_email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="email" name="my_email" id="my_email" class="w-full border rounded px-3 py-2" required>
+        </div>
+
+        <div>
+          <label for="my_password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
+          <input type="password" name="my_password" id="my_password" class="w-full border rounded px-3 py-2" required>
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition">
+          S'inscrire
+        </button>
+      </form>
+
+      <p class="text-sm text-center mt-4 text-gray-600">
+        Déjà un compte ? <a href="{% url 'login' %}" class="text-indigo-600 hover:underline">Connectez-vous</a>
+      </p>
+    </div>
+  </div>
+{% endblock %}

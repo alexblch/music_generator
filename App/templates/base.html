@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Titre par défaut{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+
+<nav class="bg-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+
+    <!-- Gauche : Accueil -->
+    <div class="w-1/3 text-left">
+      <a href="{% url 'index' %}" class="text-xl font-semibold text-indigo-600 hover:underline">Accueil</a>
+    </div>
+    
+    <div class="w-1/3 text-center">
+      <a href="#generate" class="text-xl font-semibold text-indigo-600 hover:underline">Générer de la musique</a>
+    </div>
+
+    <!-- Centre : Contact (même style que Accueil) -->
+    <div class="w-1/3 text-center">
+      <a href="#contact" class="text-xl font-semibold text-indigo-600 hover:underline">Contact</a>
+    </div>
+
+    <!-- Droite : Connexion / Déconnexion -->
+    <div class="w-1/3 text-right">
+      {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">Se déconnecter</a>
+      {% else %}
+        <a href="{% url 'login' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">Se connecter</a>
+      {% endif %}
+    </div>
+
+  </div>
+</nav>
+
+
+
+  <!-- CONTENU SPÉCIFIQUE À CHAQUE PAGE -->
+  <main class="p-6">
+    {% block content %}
+    <!-- contenu de la page -->
+    {% endblock %}
+  </main>
+
+</body>
+</html>
