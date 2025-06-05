@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from App.forms import ContactForm
+from App.models import ContactMessage as Contact
 
 User = get_user_model()
 
@@ -66,8 +67,6 @@ def generate_music(request):
     return render(request, 'App/generate.html')
 
 
-def contact(request):
-    return render(request, 'App/contact.html')
 
 
 def contact(request):
@@ -79,6 +78,8 @@ def contact(request):
             email = form.cleaned_data['email']
             message = form.cleaned_data['message']
             # Send email or save to database
+            contact = Contact(name=name, email=email, message=message)
+            contact.save()
             return redirect('success')
     else:
         form = ContactForm()
