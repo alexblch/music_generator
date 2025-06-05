@@ -28,10 +28,13 @@ class MusicGenerated(models.Model):
 
     def __str__(self):
         return f'Music generated for prompt: {self.prompt}'
-    
-    
+
+
 class FeedBackMusic(models.Model):
     promptfeed = models.TextField(_("prompt"), max_length=500)
     rate = models.IntegerField(_("rate"), validators=[MinValueValidator(1), MaxValueValidator(5)])
     reward = models.FloatField(_("reward"), default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback for prompt: {self.promptfeed}, Rate: {self.rate}, Reward: {self.reward}"
