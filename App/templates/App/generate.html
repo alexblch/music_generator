@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Générer de la Musique{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center mt-20">
+  <div class="bg-white p-10 rounded-lg shadow-md w-full max-w-xl text-center">
+    <h2 class="text-3xl font-bold text-indigo-600 mb-6">Génération de musique IA</h2>
+
+    <form method="POST" action="{% url 'generate' %}">
+      {% csrf_token %}
+      <div class="mb-4 text-left">
+        <label for="prompt" class="block text-gray-700 font-semibold mb-2">Décrivez la musique souhaitée :</label>
+        <textarea id="prompt" name="prompt" rows="4" placeholder="Ex : Une mélodie joyeuse pour un coucher de soleil en été..."
+                  class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+      </div>
+
+      <button type="submit"
+              class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition">
+        Générer
+      </button>
+    </form>
+
+    {% if generated_music_url %}
+      <div class="mt-8">
+        <h4 class="text-lg font-semibold text-gray-800 mb-2">Résultat :</h4>
+        <audio controls class="w-full">
+          <source src="{{ generated_music_url }}" type="audio/mpeg">
+          Votre navigateur ne supporte pas la lecture audio.
+        </audio>
+      </div>
+    {% elif error_message %}
+      <div class="mt-6 text-red-600 font-medium">
+        {{ error_message }}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

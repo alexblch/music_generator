@@ -15,14 +15,13 @@
     <div class="w-1/3 text-left">
       <a href="{% url 'index' %}" class="text-xl font-semibold text-indigo-600 hover:underline">Accueil</a>
     </div>
-    
     <div class="w-1/3 text-center">
-      <a href="#generate" class="text-xl font-semibold text-indigo-600 hover:underline">Générer de la musique</a>
+      <a href="{% url 'generate' %}" class="text-xl font-semibold text-indigo-600 hover:underline">Générer de la musique</a>
     </div>
 
     <!-- Centre : Contact (même style que Accueil) -->
     <div class="w-1/3 text-center">
-      <a href="#contact" class="text-xl font-semibold text-indigo-600 hover:underline">Contact</a>
+      <a href="{% url 'contact' %}" class="text-xl font-semibold text-indigo-600 hover:underline">Contact</a>
     </div>
 
     <!-- Droite : Connexion / Déconnexion -->

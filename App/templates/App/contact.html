@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% load form_tags %}
+
+{% block content %}
+<div class="flex justify-center items-center mt-20">
+  <div class="bg-white p-10 rounded-lg shadow-md w-full max-w-lg">
+    <h2 class="text-3xl font-bold text-indigo-600 mb-6 text-center">Contactez-nous</h2>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-5">
+            <label for="{{ field.id_for_label }}" class="block text-gray-700 font-semibold mb-1">
+            {{ field.label }}
+            </label>
+            {{ field|add_class:"w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" }}
+            {% if field.errors %}
+            <p class="text-red-600 text-sm mt-1">
+                {{ field.errors|striptags }}
+            </p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+
+      <div class="text-center mt-6">
+        <button type="submit"
+                class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition">
+          Envoyer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
