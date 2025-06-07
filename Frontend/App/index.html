@@ -1,16 +1,31 @@
-{% extends 'base.html' %}
 
+{% extends 'base.html' %}
+{% load static %}
 {% block title %}Accueil{% endblock %}
 
 {% block content %}
   <!-- Contenu style page Word -->
   <main class="flex-1 flex justify-center items-start mt-10 px-4">
-    <div class="bg-white shadow-lg rounded-xl p-10 w-full max-w-[794px] text-center"> <!-- A4 = 794px de large -->
-      <h1 class="text-4xl font-bold text-indigo-600 mb-6">PrompTune</h1>
-      <p class="text-gray-700 text-lg leading-relaxed">
-        Une idée, un prompt, une musique. <br><br>
+    <div class="bg-[#1e293b] shadow-lg rounded-xl p-10 w-full max-w-[794px] text-center">
+      <h1 class="text-4xl font-bold text-white mb-6">PrompTune</h1>
+      <p class="text-gray-200 text-lg leading-relaxed mb-8">
+        Type it, Hear it !<br><br>
         Notre IA compose pour vous.
       </p>
+
+      <!-- Images côte à côte -->
+      <div class="flex flex-col md:flex-row justify-center items-center gap-6 mb-6">
+        <img src="{% static 'images/google-musiclm-ia.jpg' %}" alt="Google MusicLM"
+             class="w-full md:w-[47%] rounded-lg shadow">
+        <img src="{% static 'images/meilleurs-outils-IA-de-generation-de-musique.jpg' %}" alt="Outils IA musique"
+             class="w-full md:w-[47%] rounded-lg shadow">
+      </div>
+      <p class="text-gray-300 text-md leading-relaxed mt-6">
+        Que vous soyez étudiant en quête d'inspiration, musicien en herbe ou créateur confirmé, PrompTune est là pour vous accompagner.
+        Notre outil démocratise la composition musicale grâce à l’intelligence artificielle, en transformant vos idées en véritables créations sonores.  
+        Il suffit d’un prompt, et la musique prend vie.
+      </p>
+
     </div>
   </main>
 {% include "footer.html" %}
