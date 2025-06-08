@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from App.forms import ContactForm
 from App.models import ContactMessage as Contact
+from App.utils import generate_music_from_prompt
 
 User = get_user_model()
 
@@ -58,13 +59,27 @@ def logout(request):
     return redirect('index')
 
 def generate_music(request):
+    context = {}
+
     if request.method == "POST":
-        """prompt = request.POST.get("prompt")
-        # Call your music generation logic here
-        generated_music_url = generate_music_from_prompt(prompt)
-        return render(request, 'App/generate.html', {"generated_music_url": generated_music_url})"""
-        print('Génération de musique pour plus tard')
-    return render(request, 'App/generate.html')
+        if "prompt" in request.POST:
+            # Cas : génération de musique
+            prompt = request.POST.get("prompt")
+            generated_music_url = generate_music_from_prompt(prompt)
+            print("Génération de musique en cours")
+            context["generated_music_url"] = generated_music_url
+
+        elif "rating" in request.POST and "feedback" in request.POST:
+            # Cas : envoi de feedback
+            rating = request.POST.get("rating")
+            feedback = request.POST.get("feedback")
+
+            # 💾 Tu peux ici enregistrer les feedbacks en base si besoin
+            print(f"Feedback reçu : note={rating}, commentaire={feedback}")
+            context["feedback_message"] = "Merci pour votre retour !"
+
+    return render(request, 'App/generate.html', context)
+
 
 
 

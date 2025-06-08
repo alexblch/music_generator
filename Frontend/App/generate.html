@@ -3,45 +3,91 @@
 {% block title %}Générer de la Musique{% endblock %}
 
 {% block content %}
-<div class="flex justify-center items-center mt-20 px-4">
-  <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-xl text-center">
-    <h2 class="text-3xl font-bold text-white mb-6">Génération de musique IA</h2>
+<div class="px-4">
 
-    <form method="POST" action="{% url 'generate' %}" class="mt-6">
-      {% csrf_token %}
-      <div class="flex items-center bg-[#0f172a] border border-gray-600 rounded-full px-4 py-2 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500">
-        <input
-          type="text"
-          name="prompt"
-          id="prompt"
-          placeholder="Décrivez la musique à générer..."
-          class="flex-grow bg-transparent text-white placeholder-gray-400 focus:outline-none"
-          required
-        />
-        <button type="submit" title="Générer">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 hover:text-indigo-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-    </form>
+  <!-- Boîte génération -->
+  <div class="flex justify-center mt-20">
+    <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-xl text-center">
+      <h2 class="text-3xl font-bold text-white mb-6">Générer votre musique</h2>
 
+      <form method="POST" action="{% url 'generate' %}" class="mt-6">
+        {% csrf_token %}
+        <div class="flex items-center bg-[#0f172a] border border-gray-600 rounded-full px-4 py-2 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500">
+          <input
+            type="text"
+            name="prompt"
+            id="prompt"
+            placeholder="Décrivez la musique à générer..."
+            class="flex-grow bg-transparent text-white placeholder-gray-400 focus:outline-none"
+            required
+          />
+          <button type="submit" title="Générer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 hover:text-indigo-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </form>
 
-    {% if generated_music_url %}
-      <div class="mt-8">
-        <h4 class="text-lg font-semibold text-gray-200 mb-2">Résultat :</h4>
-        <audio controls class="w-full">
-          <source src="{{ generated_music_url }}" type="audio/mpeg">
-          Votre navigateur ne supporte pas la lecture audio.
-        </audio>
-      </div>
-    {% elif error_message %}
-      <div class="mt-6 text-red-400 font-medium">
+      {% if generated_music_url %}
+        <div class="mt-8">
+          <h4 class="text-lg font-semibold text-gray-200 mb-2">Résultat :</h4>
+          <!--<audio controls class="w-full">
+            <source src="{{ generated_music_url }}" type="audio/mpeg">
+            Votre navigateur ne supporte pas la lecture audio.
+          </audio>-->
+          <p>{{ generated_music_url }}</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Boîte feedback -->
+  {% if generated_music_url %}
+  <div class="flex justify-center mt-12">
+    <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-xl text-center">
+      <h2 class="text-3xl font-bold text-white mb-6">Nous aimerions savoir quel est votre avis !</h2>
+      <p class="text-gray-300">Merci de prendre un moment pour évaluer la musique générée. Votre retour est précieux pour améliorer notre service.</p>
+      <form method="POST" action="{% url 'generate' %}" class="mt-6">
+        {% csrf_token %}
+        <div class="flex flex-col sm:flex-row items-center gap-4 bg-[#0f172a] border border-gray-600 rounded-xl px-6 py-4 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500">
+          <input
+            type="number"
+            name="rating"
+            id="rating"
+            min="1"
+            max="5"
+            placeholder="Note (1-5)"
+            class="w-full sm:w-28 bg-transparent text-white placeholder-gray-400 focus:outline-none text-center"
+            required
+          />
+          <input
+            type="text"
+            name="feedback"
+            id="feedback"
+            placeholder="Votre avis sur la musique générée..."
+            class="flex-grow bg-transparent text-white placeholder-gray-400 focus:outline-none"
+            required
+          />
+          <button type="submit" title="Envoyer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 hover:text-indigo-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% elif error_message %}
+    <div class="flex justify-center mt-12 text-red-400 font-medium">
+      <div class="bg-[#1e293b] p-6 rounded-lg shadow-md w-full max-w-xl text-center">
         {{ error_message }}
       </div>
-    {% endif %}
-  </div>
+    </div>
+  {% endif %}
+
 </div>
 {% include "footer.html" %}
 {% endblock %}
