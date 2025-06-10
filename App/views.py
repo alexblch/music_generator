@@ -13,10 +13,16 @@ from django.core.files.storage import FileSystemStorage
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from django.core.files.storage import FileSystemStorage
+import Project.settings as settings
+import os
+
 
 
 User = get_user_model()
+
+
+fs = FileSystemStorage(location=settings.MEDIA_ROOT / 'midis')
+
 
 
 # Create your views here.
@@ -88,6 +94,7 @@ def generate_music(request):
     return render(request, 'App/generate.html', context)
 
 
+
 @csrf_exempt
 def upload_midi_ajax(request):
     if request.method == 'POST' and request.FILES.get('midi_file'):
@@ -95,23 +102,35 @@ def upload_midi_ajax(request):
         if not midi_file.name.endswith(('.mid', '.midi')):
             return JsonResponse({'error': 'Format non supporté'}, status=400)
 
-        fs = FileSystemStorage(location='media/midis/')
-        filename = fs.save(midi_file.name, midi_file)
-        url = fs.url(filename)
+        # Stockage dans media/midis/
+        midi_storage = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'midis'))
+        filename = midi_storage.save(midi_file.name, midi_file)
+
+        # URL correcte pour accès immédiat
+        url = settings.MEDIA_URL + 'midis/' + filename
         return JsonResponse({'success': True, 'url': url})
 
     return JsonResponse({'error': 'Aucun fichier'}, status=400)
 
+
 def help(request):
+    audio_url = None
+
     if request.method == 'POST':
         if 'new_midi' in request.FILES:
+            # upload classique (non utilisé ici mais conservé)
             file = request.FILES['new_midi']
-            # Sauvegarde du fichier, ex :
             path = default_storage.save('midis/' + file.name, file)
-    else :
-        path = None
+            audio_url = path
+
+        elif 'audio_url' in request.POST:
+            # cas du formulaire AJAX "Envoyer"
+            audio_url = request.POST['audio_url']
+            print("Fichier validé par l'utilisateur :", audio_url)
+            # tu peux enregistrer ça en base ici si tu veux
+
     return render(request, 'App/help.html', {
-        'audio': path  # ou un FileField ou objet complet
+        'audio': audio_url
     })
 
 
