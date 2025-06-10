@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nous aider{% endblock %}
+
+{% block content %}
+<div class="flex justify-center mt-16 px-4">
+  <div class="bg-[#1e293b] shadow-lg rounded-xl p-8 w-full max-w-md text-center">
+    <h1 class="text-2xl font-bold text-white mb-4">Aidez-nous à enrichir notre modèle !</h1>
+    <p class="text-gray-300 mb-6">
+      Téléchargez vos fichiers MIDI pour améliorer notre IA. Votre contribution est précieuse, et nous respectons vos données privées.
+    </p>
+
+    <!-- Sélection de fichier -->
+    <input type="file" id="midiInput" accept=".mid,.midi"
+           class="w-full bg-[#0f172a] text-white border border-gray-600 rounded px-3 py-2 mb-4">
+
+    <!-- Chargement -->
+    <div id="loading" class="text-indigo-400 hidden mb-4">Chargement du fichier...</div>
+
+    <!-- Player & lien -->
+    <div id="midiPlayer" class="hidden text-center mb-4">
+      <p class="text-gray-300 mb-2">🎵 Fichier prêt :</p>
+      <a id="midiLink" href="#" target="_blank" class="text-indigo-400 underline">Ouvrir le fichier MIDI</a>
+      <br>
+      <button id="playBtn" class="mt-2 bg-indigo-600 text-white py-1 px-4 rounded hover:bg-indigo-700">Play</button>
+    </div>
+
+    <!-- Bouton envoyer -->
+    <form id="submitForm" method="post" class="hidden">
+      {% csrf_token %}
+      <input type="hidden" name="audio_url" id="audio_url">
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
+        Envoyer
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Scripts JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.27/build/Midi.min.js"></script>
+
+<script>
+  const midiInput = document.getElementById('midiInput');
+  const loading = document.getElementById('loading');
+  const player = document.getElementById('midiPlayer');
+  const link = document.getElementById('midiLink');
+  const playBtn = document.getElementById('playBtn');
+  const form = document.getElementById('submitForm');
+  const audioField = document.getElementById('audio_url');
+
+  midiInput.addEventListener('change', () => {
+    const file = midiInput.files[0];
+    if (!file) return;
+
+    loading.classList.remove('hidden');
+    player.classList.add('hidden');
+    form.classList.add('hidden');
+
+    const formData = new FormData();
+    formData.append('midi_file', file);
+
+    fetch('/upload-midi/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(async data => {
+      loading.classList.add('hidden');
+
+      if (data.success) {
+        link.href = data.url;
+        audioField.value = data.url;
+        player.classList.remove('hidden');
+        form.classList.remove('hidden');
+
+        // Charger et jouer avec Tone.js
+        const response = await fetch(data.url);
+        const arrayBuffer = await response.arrayBuffer();
+        const midi = new Midi(arrayBuffer);
+        const now = Tone.now() + 0.5;
+
+        playBtn.onclick = async () => {
+          await Tone.start();
+          midi.tracks.forEach(track => {
+            const synth = new Tone.PolySynth().toDestination();
+            track.notes.forEach(note => {
+              synth.triggerAttackRelease(note.name, note.duration, note.time + now, note.velocity);
+            });
+          });
+        };
+      } else {
+        alert('Erreur : ' + data.error);
+      }
+    })
+    .catch(() => {
+      loading.classList.add('hidden');
+      alert('Erreur réseau');
+    });
+  });
+</script>
+{% endblock %}

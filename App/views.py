@@ -8,6 +8,13 @@ from django.contrib.auth import get_user_model
 from App.forms import ContactForm
 from App.models import ContactMessage as Contact
 from App.utils import generate_music_from_prompt
+from django.core.files.storage import default_storage
+from django.core.files.storage import FileSystemStorage
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.core.files.storage import FileSystemStorage
+
 
 User = get_user_model()
 
@@ -81,6 +88,31 @@ def generate_music(request):
     return render(request, 'App/generate.html', context)
 
 
+@csrf_exempt
+def upload_midi_ajax(request):
+    if request.method == 'POST' and request.FILES.get('midi_file'):
+        midi_file = request.FILES['midi_file']
+        if not midi_file.name.endswith(('.mid', '.midi')):
+            return JsonResponse({'error': 'Format non supporté'}, status=400)
+
+        fs = FileSystemStorage(location='media/midis/')
+        filename = fs.save(midi_file.name, midi_file)
+        url = fs.url(filename)
+        return JsonResponse({'success': True, 'url': url})
+
+    return JsonResponse({'error': 'Aucun fichier'}, status=400)
+
+def help(request):
+    if request.method == 'POST':
+        if 'new_midi' in request.FILES:
+            file = request.FILES['new_midi']
+            # Sauvegarde du fichier, ex :
+            path = default_storage.save('midis/' + file.name, file)
+    else :
+        path = None
+    return render(request, 'App/help.html', {
+        'audio': path  # ou un FileField ou objet complet
+    })
 
 
 
