@@ -33,11 +33,10 @@
       {% if generated_music_url %}
         <div class="mt-8">
           <h4 class="text-lg font-semibold text-gray-200 mb-2">Résultat :</h4>
-          <!--<audio controls class="w-full">
+          <audio controls class="w-full">
             <source src="{{ generated_music_url }}" type="audio/mpeg">
             Votre navigateur ne supporte pas la lecture audio.
-          </audio>-->
-          <p>{{ generated_music_url }}</p>
+          </audio>
         </div>
       {% endif %}
     </div>
@@ -51,33 +50,76 @@
       <p class="text-gray-300">Merci de prendre un moment pour évaluer la musique générée. Votre retour est précieux pour améliorer notre service.</p>
       <form method="POST" action="{% url 'generate' %}" class="mt-6">
         {% csrf_token %}
-        <div class="flex flex-col sm:flex-row items-center gap-4 bg-[#0f172a] border border-gray-600 rounded-xl px-6 py-4 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500">
-          <input
-            type="number"
-            name="rating"
-            id="rating"
-            min="1"
-            max="5"
-            placeholder="Note (1-5)"
-            class="w-full sm:w-28 bg-transparent text-white placeholder-gray-400 focus:outline-none text-center"
-            required
-          />
+        <div class="bg-[#0f172a] border border-gray-600 rounded-xl px-6 py-4 shadow-sm space-y-4 text-white">
+          
+          <!-- Étoiles -->
+          <div class="flex justify-center space-x-1" id="star-container">
+            {% for i in "12345" %}
+              <svg data-value="{{ i }}" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 cursor-pointer text-gray-500 transition-colors"
+                  fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 .587l3.668 7.431L24 9.753l-6 5.847L19.336 24 12 19.897 4.664 24 6 15.6 0 9.753l8.332-1.735z"/>
+              </svg>
+            {% endfor %}
+          </div>
+
+          <!-- Champ caché pour la note -->
+          <input type="hidden" name="rating" id="rating" required>
+
+          <!-- Avis -->
           <input
             type="text"
             name="feedback"
             id="feedback"
             placeholder="Votre avis sur la musique générée..."
-            class="flex-grow bg-transparent text-white placeholder-gray-400 focus:outline-none"
+            class="w-full bg-transparent text-white placeholder-gray-400 focus:outline-none border-t border-gray-600 pt-2"
             required
           />
-          <button type="submit" title="Envoyer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 hover:text-indigo-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
+
+          <!-- Bouton -->
+          <div class="flex justify-end">
+            <button type="submit" title="Envoyer">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 hover:text-indigo-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </form>
+
+      <!-- JS pour gérer les étoiles -->
+      <script>
+        const stars = document.querySelectorAll('#star-container svg');
+        const ratingInput = document.getElementById('rating');
+        let currentRating = 0;
+
+        stars.forEach((star, index) => {
+          star.addEventListener('mouseover', () => {
+            highlightStars(index + 1);
+          });
+
+          star.addEventListener('click', () => {
+            currentRating = index + 1;
+            ratingInput.value = currentRating;
+          });
+
+          star.addEventListener('mouseleave', () => {
+            highlightStars(currentRating);
+          });
+        });
+
+        function highlightStars(rating) {
+          stars.forEach((star, i) => {
+            if (i < rating) {
+              star.classList.remove('text-gray-500');
+              star.classList.add('text-yellow-400');
+            } else {
+              star.classList.remove('text-yellow-400');
+              star.classList.add('text-gray-500');
+            }
+          });
+        }
+      </script>
     </div>
   </div>
   {% elif error_message %}
@@ -89,5 +131,4 @@
   {% endif %}
 
 </div>
-{% include "footer.html" %}
 {% endblock %}

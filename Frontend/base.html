@@ -3,11 +3,12 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
   <title>{% block title %}Titre par défaut{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-[#0f172a] text-white min-h-screen">
+<body class="bg-[#0f172a] text-white min-h-screen " style="background-image: url('{% static 'images/fond.jpg' %}');">
   <header class="pt-4 pb-2 relative flex items-center justify-between px-6">
     <!-- Logo à gauche -->
     <a href="{% url 'index' %}">
@@ -71,6 +72,6 @@
     <!-- contenu de la page -->
     {% endblock %}
   </main>
-
+{% include "footer.html" %}
 </body>
 </html>
