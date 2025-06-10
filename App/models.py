@@ -28,6 +28,15 @@ class MusicGenerated(models.Model):
 
     def __str__(self):
         return f'Music generated for prompt: {self.prompt}'
+    
+    
+class MidiSentByUsers(models.Model):
+    midi_file = models.FileField(_("midi file"), upload_to='midis/')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='uploaded_midis')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'MIDI file uploaded by {self.user.username} at {self.created_at}'
 
 
 class FeedBackMusic(models.Model):

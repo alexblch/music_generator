@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from App.forms import ContactForm
-from App.models import ContactMessage as Contact
+from App.models import ContactMessage as Contact, MusicGenerated, MidiSentByUsers, FeedBackMusic
 from App.utils import generate_music_from_prompt
 from django.core.files.storage import default_storage
 from django.core.files.storage import FileSystemStorage
@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import Project.settings as settings
 import os
+
 
 
 
@@ -127,8 +128,14 @@ def help(request):
             # cas du formulaire AJAX "Envoyer"
             audio_url = request.POST['audio_url']
             print("Fichier validé par l'utilisateur :", audio_url)
+            midi_sent = MidiSentByUsers(
+                midi_file=audio_url,
+                user=request.user
+            )
             # tu peux enregistrer ça en base ici si tu veux
-
+            midi_sent.save()
+            #todo: envoyer vers compute storage gcp
+            pass
     return render(request, 'App/help.html', {
         'audio': audio_url
     })
