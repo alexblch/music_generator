@@ -28,8 +28,8 @@ class MusicGenerated(models.Model):
 
     def __str__(self):
         return f'Music generated for prompt: {self.prompt}'
-    
-    
+
+
 class MidiSentByUsers(models.Model):
     midi_file = models.FileField(_("midi file"), upload_to='midis/')
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='uploaded_midis')
@@ -40,6 +40,9 @@ class MidiSentByUsers(models.Model):
 
 
 class FeedBackMusic(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="feedbacks"
+    )
     promptfeed = models.TextField(_("prompt"), max_length=500)
     rate = models.IntegerField(_("rate"), validators=[MinValueValidator(1), MaxValueValidator(5)])
     reward = models.FloatField(_("reward"), default=0.0)

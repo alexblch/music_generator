@@ -17,13 +17,10 @@ import Project.settings as settings
 import os
 
 
-
-
 User = get_user_model()
 
 
 fs = FileSystemStorage(location=settings.MEDIA_ROOT / 'midis')
-
 
 
 # Create your views here.
@@ -72,25 +69,33 @@ def logout(request):
     auth_logout(request)
     return redirect('index')
 
+import random
+
 def generate_music(request):
     context = {}
 
     if request.method == "POST":
         if "prompt" in request.POST:
-            # Cas : génération de musique
             prompt = request.POST.get("prompt")
             generated_music_url = generate_music_from_prompt(prompt)
-            print("Génération de musique en cours")
             context["generated_music_url"] = generated_music_url
 
-        elif "rating" in request.POST and "feedback" in request.POST:
-            # Cas : envoi de feedback
-            rating = request.POST.get("rating")
-            feedback = request.POST.get("feedback")
+        if "rating" in request.POST and "feedback" in request.POST:
+            try:
+                rate = int(request.POST.get("rating"))
+                feedback_text = request.POST.get("feedback")
+                reward = random.uniform(0, 1)
 
-            # 💾 Tu peux ici enregistrer les feedbacks en base si besoin
-            print(f"Feedback reçu : note={rating}, commentaire={feedback}")
-            context["feedback_message"] = "Merci pour votre retour !"
+                FeedBackMusic.objects.create(
+                    user=request.user,
+                    promptfeed=feedback_text,
+                    rate=rate,
+                    reward=reward
+                )
+
+                context["feedback_message"] = "Merci pour votre retour !"
+            except (ValueError, TypeError):
+                context["feedback_message"] = "Erreur lors de la soumission du feedback."
 
     return render(request, 'App/generate.html', context)
 
@@ -139,7 +144,6 @@ def help(request):
     return render(request, 'App/help.html', {
         'audio': audio_url
     })
-
 
 
 def contact(request):

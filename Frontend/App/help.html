@@ -12,8 +12,15 @@
     </p>
 
     <!-- Sélection de fichier -->
-    <input type="file" id="midiInput" accept=".mid,.midi"
-           class="w-full bg-[#0f172a] text-white border border-gray-600 rounded px-3 py-2 mb-4">
+    <!-- Zone de drop / clic stylisée -->
+    <label for="midiInput" class="cursor-pointer flex flex-col items-center justify-center gap-2 w-full h-40 bg-[#0f172a] border-2 border-dashed border-gray-600 text-gray-300 rounded-2xl mb-4 hover:border-indigo-500 hover:bg-[#1a2539] transition">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12v9m0 0l-3-3m3 3l3-3m0-13H6a2 2 0 00-2 2v7h16V6a2 2 0 00-2-2z" />
+      </svg>
+      <span class="text-sm">Cliquez pour importer un fichier MIDI</span>
+      <span class="text-xs text-gray-400">Formats acceptés : .mid, .midi</span>
+    </label>
+    <input type="file" id="midiInput" accept=".mid,.midi" class="hidden">
 
     <!-- Chargement -->
     <div id="loading" class="text-indigo-400 hidden mb-4">Chargement du fichier...</div>
@@ -31,10 +38,12 @@
     <form id="submitForm" method="post" class="hidden">
       {% csrf_token %}
       <input type="hidden" name="audio_url" id="audio_url">
-      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
+      <button type="submit"
+              class="w-full bg-emerald-500 text-white py-2 px-6 rounded-full hover:bg-emerald-600 transition shadow-md focus:outline-none">
         Envoyer
       </button>
     </form>
+
   </div>
 </div>
 
