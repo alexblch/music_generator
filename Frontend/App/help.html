@@ -24,6 +24,7 @@
       <a id="midiLink" href="#" target="_blank" class="text-indigo-400 underline">Ouvrir le fichier MIDI</a>
       <br>
       <button id="playBtn" class="mt-2 bg-indigo-600 text-white py-1 px-4 rounded hover:bg-indigo-700">Play</button>
+      <button id="stopBtn" class="mt-2 ml-2 bg-red-600 text-white py-1 px-4 rounded hover:bg-red-700">Stop</button>
     </div>
 
     <!-- Bouton envoyer -->
@@ -49,6 +50,7 @@
   const playBtn = document.getElementById('playBtn');
   const form = document.getElementById('submitForm');
   const audioField = document.getElementById('audio_url');
+  const stopBtn = document.getElementById('stopBtn');
 
   midiInput.addEventListener('change', () => {
     const file = midiInput.files[0];
@@ -76,20 +78,33 @@
         player.classList.remove('hidden');
         form.classList.remove('hidden');
 
-        // Charger et jouer avec Tone.js
         const response = await fetch(data.url);
         const arrayBuffer = await response.arrayBuffer();
         const midi = new Midi(arrayBuffer);
-        const now = Tone.now() + 0.5;
+
+        // Création du synthé global une seule fois
+        const synth = new Tone.PolySynth().toDestination();
+
+        // Nettoyer d'anciens événements programmés s'il y en a
+        Tone.Transport.cancel();
+        Tone.Transport.stop();
+
+        // Planifier les notes MIDI avec le transport
+        midi.tracks.forEach(track => {
+          track.notes.forEach(note => {
+            Tone.Transport.schedule(time => {
+              synth.triggerAttackRelease(note.name, note.duration, time, note.velocity);
+            }, note.time);
+          });
+        });
 
         playBtn.onclick = async () => {
-          await Tone.start();
-          midi.tracks.forEach(track => {
-            const synth = new Tone.PolySynth().toDestination();
-            track.notes.forEach(note => {
-              synth.triggerAttackRelease(note.name, note.duration, note.time + now, note.velocity);
-            });
-          });
+          await Tone.start(); // Nécessaire pour initialiser l’audio dans le navigateur
+          Tone.Transport.start("+0.1"); // Commencer après un léger délai
+        };
+
+        stopBtn.onclick = () => {
+          Tone.Transport.stop();
         };
       } else {
         alert('Erreur : ' + data.error);
@@ -97,7 +112,7 @@
     })
     .catch(() => {
       loading.classList.add('hidden');
-      alert('Erreur réseau');
+      alert('Erreur réseau lors de l’envoi du fichier MIDI.');
     });
   });
 </script>
