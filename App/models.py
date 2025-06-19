@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
 
 
 class CustomUser(AbstractUser):
@@ -39,14 +40,11 @@ class MidiSentByUsers(models.Model):
         return f'MIDI file uploaded by {self.user.username} at {self.created_at}'
 
 
+from django.conf import settings
+
 class FeedBackMusic(models.Model):
-    user = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name="feedbacks"
-    )
+
     promptfeed = models.TextField(_("prompt"), max_length=500)
     rate = models.IntegerField(_("rate"), validators=[MinValueValidator(1), MaxValueValidator(5)])
     reward = models.FloatField(_("reward"), default=0.0)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Feedback for prompt: {self.promptfeed}, Rate: {self.rate}, Reward: {self.reward}"

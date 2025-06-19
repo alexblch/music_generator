@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import Project.settings as settings
 import os
+import random
 
 
 User = get_user_model()
@@ -69,35 +70,41 @@ def logout(request):
     auth_logout(request)
     return redirect('index')
 
-import random
+
 
 def generate_music(request):
     context = {}
 
     if request.method == "POST":
-        if "prompt" in request.POST:
+        form_type = request.POST.get("form_type")
+
+        if form_type == "generation":
             prompt = request.POST.get("prompt")
             generated_music_url = generate_music_from_prompt(prompt)
             context["generated_music_url"] = generated_music_url
 
-        if "rating" in request.POST and "feedback" in request.POST:
+        elif form_type == "feedback":
             try:
+                print("POST DATA:", request.POST)
                 rate = int(request.POST.get("rating"))
+                print(f"Rate received: {rate}")
                 feedback_text = request.POST.get("feedback")
                 reward = random.uniform(0, 1)
 
-                FeedBackMusic.objects.create(
-                    user=request.user,
-                    promptfeed=feedback_text,
-                    rate=rate,
-                    reward=reward
-                )
-
-                context["feedback_message"] = "Merci pour votre retour !"
-            except (ValueError, TypeError):
-                context["feedback_message"] = "Erreur lors de la soumission du feedback."
+                if request.user.is_authenticated:
+                    FeedBackMusic.objects.create(
+                        promptfeed=feedback_text,
+                        rate=rate,
+                        reward=reward
+                    )
+                    context["feedback_message"] = "Merci pour votre retour !"
+                else:
+                    context["feedback_message"] = "Vous devez être connecté pour laisser un avis."
+            except Exception as e:
+                context["feedback_message"] = f"Erreur lors de la soumission du feedback : {str(e)}"
 
     return render(request, 'App/generate.html', context)
+
 
 
 
