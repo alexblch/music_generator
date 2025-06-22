@@ -1,2 +1,5 @@
 django
 dotenv
+torch
+torchaudio
+audiocraft

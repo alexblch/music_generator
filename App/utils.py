@@ -1,16 +1,36 @@
+from audiocraft.models import MusicGen
+import torchaudio
+import torch
+
+
+
+import os
+
 def generate_music_from_prompt(prompt):
     """
-    Function to generate music from a given prompt.
-    This is a placeholder function that simulates music generation.
+    Génère une musique à partir d'un prompt et retourne l'URL du fichier audio.
     """
-    # Simulate music generation logic
     if not prompt:
-        return "No prompt provided."
+        return None
     
-    # Here you would typically call your music generation model or API
-    generated_music = f"Generated music based on the prompt: {prompt}"
-    
-    return generated_music
+    model = MusicGen.get_pretrained('facebook/musicgen-small')
+    model.set_generation_params(duration=10)
+
+    # Génération
+    generated_music = model.generate([prompt])
+
+    # Définir le nom du fichier (ex: output_123456.wav)
+    file_name = f"output_{abs(hash(prompt)) % 1000000}.wav"
+    file_path = os.path.join("media", file_name)
+
+    # Crée le dossier s'il n'existe pas
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    # Sauvegarder dans le dossier media/
+    torchaudio.save(file_path, generated_music[0].cpu(), 32000)
+
+    # Retourne l'URL à utiliser dans la balise <audio>
+    return f"/media/{file_name}"
 
 
 # prompt: envoi mail python
