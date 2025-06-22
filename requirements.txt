@@ -1,5 +1,7 @@
 django
-dotenv
-torch
-torchaudio
-audiocraft
+python-dotenv
+torch==2.1.0
+torchaudio==2.1.0
+numpy>=1.26.0,<2.0
+transformers==4.39.3
+git+https://github.com/facebookresearch/audiocraft#egg=audiocraft
