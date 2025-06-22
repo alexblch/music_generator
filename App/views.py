@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from App.forms import ContactForm
 from App.models import ContactMessage as Contact, MusicGenerated, MidiSentByUsers, FeedBackMusic
-from App.utils import generate_music_from_prompt
+from App.utils import generate_music_from_prompt, send_email
 from django.core.files.storage import default_storage
 from django.core.files.storage import FileSystemStorage
 
@@ -16,7 +16,7 @@ from django.http import JsonResponse
 import Project.settings as settings
 import os
 import random
-
+from dotenv import load_dotenv
 
 User = get_user_model()
 
@@ -163,6 +163,14 @@ def contact(request):
             message = form.cleaned_data['message']
             # Send email or save to database
             contact = Contact(name=name, email=email, message=message)
+            load_dotenv()
+            send_email(
+                sender_email=os.getenv('SENDER_EMAIL'),
+                sender_password=os.getenv('SENDER_PASSWORD'),
+                receiver_email=os.getenv('RECEIVER_EMAIL'),
+                subject=f"Contact from {name}",
+                body=f'Message from {name}, ({email}):\n\n{message}'
+            )
             contact.save()
             return redirect('success')
     else:
