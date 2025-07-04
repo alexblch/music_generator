@@ -2,3 +2,4 @@ db.sqlite3
 bdd/
 .env
 App/media/
+secrets/gcs-creds.json

@@ -5,18 +5,20 @@ services:
     container_name: django_app
     volumes:
       - .:/code
+      - ./secrets/gcs-creds.json:/secrets/gcs-creds.json:ro
     working_dir: /code
     ports:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
       - NVIDIA_VISIBLE_DEVICES=all
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-creds.json
     deploy:
       resources:
         reservations:
           devices:
             - capabilities: [gpu]
-    # PAS de depends_on ici !!!
+
 
   nginx:
     image: nginx:latest

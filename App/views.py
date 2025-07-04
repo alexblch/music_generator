@@ -18,11 +18,26 @@ import os
 import random
 from dotenv import load_dotenv
 import google.generativeai as genai
+from io import StringIO
+from google.cloud import storage
+
 
 User = get_user_model()
 
 
 fs = FileSystemStorage(location=settings.MEDIA_ROOT / 'midis')
+
+
+
+client = storage.Client()
+bucket = client.bucket('pastorageesgi')
+blob = bucket.blob('env_vars/.env')
+
+# Lire le contenu du .env en mémoire
+env_data = blob.download_as_text()
+
+# Charger les variables depuis ce contenu (sans fichier)
+load_dotenv(stream=StringIO(env_data))
 
 
 # Create your views here.
@@ -74,7 +89,7 @@ def logout(request):
 
 
 def generate_music(request):
-    genai.configure(api_key=os.environ.get("VERTEX_API_KEY"))
+    genai.configure(api_key=os.getenv("VERTEX_API_KEY"))
     
     context = {}
 
