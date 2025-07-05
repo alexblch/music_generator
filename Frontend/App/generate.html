@@ -1,21 +1,29 @@
 {% extends 'base.html' %}
-
 {% block title %}Générer de la Musique{% endblock %}
 
 {% block content %}
 <div class="px-4">
 
-  <!-- Boîte génération -->
-  <div class="flex justify-center mt-20">
+  <!-- DEBUG CONTEXTE -->
+  <div class="bg-yellow-900 text-white text-sm p-4 rounded mt-6 mb-8">
+    <strong>DEBUG CONTEXTE :</strong><br>
+    <b>generated_musics:</b> {{ generated_musics }}<br>
+    <b>music_group_id:</b> {{ music_group_id }}<br>
+    <b>prompt:</b> {{ prompt }}<br>
+    <b>feedback_message:</b> {{ feedback_message }}
+  </div>
+
+  <!-- FORMULAIRE DE PROMPT -->
+  <div class="flex justify-center">
     <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-xl text-center">
       <h2 class="text-3xl font-bold text-white mb-6">Générer votre musique</h2>
-      {% if feedback_message %}
-        <p class="text-gray-300">{{ feedback_message }}</p>
+      {% if error %}
+        <p class="text-red-400">{{ error }}</p>
       {% endif %}
       <form method="POST" action="{% url 'generate' %}" class="mt-6">
         {% csrf_token %}
         <input type="hidden" name="form_type" value="generation">
-        <div class="flex items-center bg-[#0f172a] border border-gray-600 rounded-full px-4 py-2 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500">
+        <div class="flex items-center bg-[#0f172a] border border-gray-600 rounded-full px-4 py-2 shadow-sm">
           <input
             type="text"
             name="prompt"
@@ -25,145 +33,52 @@
             required
           />
           <button type="submit" title="Générer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 hover:text-indigo-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M5 12h14M12 5l7 7-7 7" />
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </button>
         </div>
-        <!-- Loader affiché pendant la génération -->
-        <div id="music-loader" class="hidden flex flex-col items-center mt-8">
-          <div class="w-56 bg-gray-800 rounded-full h-3 flex items-center">
-            <div id="loader-bar" class="bg-indigo-500 h-3 rounded-full transition-all duration-200" style="width: 0%"></div>
-          </div>
-          <span class="mt-3 text-white animate-pulse">Génération en cours...</span>
-        </div>
       </form>
-
-      {% if generated_music_url %}
-        <div class="mt-8">
-          <h4 class="text-lg font-semibold text-gray-200 mb-2">Résultat :</h4>
-          <audio controls class="w-full">
-            <source src="{{ generated_music_url }}" type="audio/mpeg">
-            Votre navigateur ne supporte pas la lecture audio.
-          </audio>
-        </div>
-      {% endif %}
     </div>
   </div>
 
-  <!-- Boîte feedback -->
-  {% if generated_music_url %}
+  <!-- AFFICHAGE DES MUSIQUES GÉNÉRÉES -->
+  {% if generated_musics %}
   <div class="flex justify-center mt-12">
-    <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-xl text-center">
-      <h2 class="text-3xl font-bold text-white mb-6">Nous aimerions savoir quel est votre avis !</h2>
-      <p class="text-gray-300">Merci de prendre un moment pour évaluer la musique générée. Votre retour est précieux pour améliorer notre service.</p>
-      <form method="POST" action="{% url 'generate' %}" class="mt-6">
+    <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-2xl text-center">
+      <h2 class="text-3xl font-bold text-white mb-6">Choisissez votre version préférée</h2>
+      <form method="POST" action="{% url 'generate' %}" class="space-y-6">
         {% csrf_token %}
         <input type="hidden" name="form_type" value="feedback">
+        <input type="hidden" name="music_group_id" value="{{ music_group_id }}">
 
-        <div class="bg-[#0f172a] border border-gray-600 rounded-xl px-6 py-4 shadow-sm space-y-4 text-white">
-          
-          <!-- Étoiles -->
-          <div class="flex justify-center space-x-1" id="star-container">
-            {% for i in "12345" %}
-              <svg data-value="{{ i }}" xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 cursor-pointer text-gray-500 transition-colors"
-                  fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 .587l3.668 7.431L24 9.753l-6 5.847L19.336 24 12 19.897 4.664 24 6 15.6 0 9.753l8.332-1.735z"/>
-              </svg>
-            {% endfor %}
+        <div class="grid grid-cols-1 gap-6">
+          {% for audio_url in generated_musics %}
+          <div class="bg-[#0f172a] border border-gray-600 rounded-xl p-4 flex items-center space-x-4">
+            <input type="radio" name="preferred_version" value="{{ forloop.counter0 }}" required>
+            <audio controls class="w-full">
+              <source src="{{ audio_url }}" type="audio/mpeg">
+              Votre navigateur ne supporte pas la lecture audio.
+            </audio>
           </div>
+          {% endfor %}
+        </div>
 
-          <!-- Champ caché pour la note -->
-          <input type="hidden" name="rating" id="rating" required>
-
-          <!-- Avis -->
-          <input
-            type="text"
-            name="feedback"
-            id="feedback"
-            placeholder="Votre avis sur la musique générée..."
-            class="w-full bg-transparent text-white placeholder-gray-400 focus:outline-none border-t border-gray-600 pt-2"
-            required
-          />
-
-          <!-- Bouton -->
-          <div class="flex justify-end">
-            <button type="submit" title="Envoyer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 hover:text-indigo-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+        <div class="mt-6 text-right">
+          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">
+            Envoyer mon choix
+          </button>
         </div>
       </form>
-
-      <!-- JS pour gérer les étoiles -->
-      <script>
-        const stars = document.querySelectorAll('#star-container svg');
-        const ratingInput = document.getElementById('rating');
-        let currentRating = 0;
-
-        stars.forEach((star, index) => {
-          star.addEventListener('mouseover', () => {
-            highlightStars(index + 1);
-          });
-
-          star.addEventListener('click', () => {
-            currentRating = index + 1;
-            ratingInput.value = currentRating;
-          });
-
-          star.addEventListener('mouseleave', () => {
-            highlightStars(currentRating);
-          });
-        });
-
-        function highlightStars(rating) {
-          stars.forEach((star, i) => {
-            if (i < rating) {
-              star.classList.remove('text-gray-500');
-              star.classList.add('text-yellow-400');
-            } else {
-              star.classList.remove('text-yellow-400');
-              star.classList.add('text-gray-500');
-            }
-          });
-        }
-      </script>
     </div>
   </div>
-  {% elif error_message %}
-    <div class="flex justify-center mt-12 text-red-400 font-medium">
-      <div class="bg-[#1e293b] p-6 rounded-lg shadow-md w-full max-w-xl text-center">
-        {{ error_message }}
-      </div>
-    </div>
   {% endif %}
-    <script>
-        // Loader barre de chargement pour la génération de musique
-        document.addEventListener("DOMContentLoaded", function() {
-          const generationForm = document.querySelector('form[action="{% url 'generate' %}"][method="POST"]');
-          const loader = document.getElementById('music-loader');
-          const loaderBar = document.getElementById('loader-bar');
-          if (generationForm && loader) {
-            generationForm.addEventListener('submit', function() {
-              loader.classList.remove('hidden');
-              loaderBar.style.width = '0%';
-              let percent = 0;
-              // Animation de progression fake
-              const interval = setInterval(() => {
-                percent += Math.random() * 3 + 2; // un peu plus rapide et progressif
-                if (percent >= 95) percent = 95; // stoppe à 95% tant que la génération n'est pas finie
-                loaderBar.style.width = percent + '%';
-              }, 250);
 
-              // Astuce : au prochain rechargement (quand résultat est prêt), tout disparait automatiquement.
-              // Si tu veux interrompre l'interval à la main, tu peux aussi utiliser un id global.
-            });
-          }
-        });
-      </script>
+  {% if feedback_message %}
+  <div class="mt-6 text-center text-green-400 text-lg">
+    {{ feedback_message }}
+  </div>
+  {% endif %}
+
 </div>
 {% endblock %}

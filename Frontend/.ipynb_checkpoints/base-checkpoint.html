@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <title>{% block title %}Titre par défaut{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#0f172a] text-white min-h-screen" style="background-image: url('{% static 'images/fondalt.png' %}');">
+  <header class="pt-4 pb-2 relative flex items-center justify-between px-6">
+    <!-- Logo à gauche (desktop), centré sur mobile -->
+    <a href="{% url 'index' %}">
+      <img src="{% static 'images/logo_promptune-removebg.png' %}" alt="PrompTune Logo" class="w-16 h-16 object-contain mx-auto md:mx-0" />
+    </a>
+    <!-- Titre centré -->
+    <h1 class="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold text-indigo-400">
+      PrompTune
+    </h1>
+    <!-- Connexion / Bonjour -->
+    <div class="text-right">
+      {% if user.is_authenticated %}
+        <span class="text-indigo-300 font-semibold">Bonjour, {{ user.first_name|default:user.username }}</span>
+      {% else %}
+        <a href="{% url 'login' %}" class="inline-block text-indigo-300 hover:underline hover:text-white transition" title="Se connecter">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12H3m0 0l4-4m-4 4l4 4m13-8v8m0 0a2 2 0 01-2 2h-4a2 2 0 01-2-2V8a2 2 0 012-2h4a2 2 0 012 2z" />
+          </svg>
+        </a>
+      {% endif %}
+    </div>
+  </header>
+
+  <!-- NAVBAR -->
+  <nav class="bg-[#1e293b] shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center text-white">
+      <!-- Desktop navbar -->
+      <div class="hidden md:flex w-full justify-between items-center">
+        <a href="{% url 'index' %}" class="text-xl font-semibold text-indigo-300 hover:text-white transition hover:underline">Accueil</a>
+        <a href="{% url 'generate' %}" class="text-xl font-semibold text-indigo-300 hover:text-white transition hover:underline">Générer de la musique</a>
+        <a href="{% url 'help' %}" class="text-xl font-semibold text-indigo-300 hover:text-white transition hover:underline">Nous aider</a>
+        <a href="{% url 'contact' %}" class="text-xl font-semibold text-indigo-300 hover:text-white transition hover:underline">Contact</a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" title="Se déconnecter" class="inline-block text-red-400 hover:text-white hover:underline transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
+          </svg>
+        </a>
+        {% endif %}
+      </div>
+      <!-- Burger pour mobile à gauche -->
+      <div class="md:hidden w-full flex items-center">
+        <button id="menu-toggle" class="text-indigo-300 focus:outline-none">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <!-- Menu mobile horizontal avec icônes -->
+    <div id="mobile-menu"
+         class="md:hidden hidden w-full bg-[#1e293b] py-2 border-t border-slate-700 z-50 animate-fadeIn">
+      <div class="flex justify-around items-end">
+        <a href="{% url 'index' %}" class="flex flex-col items-center text-indigo-300 hover:text-white">
+          <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7m-9 13h4" />
+          </svg>
+          <span class="text-xs mt-1">Accueil</span>
+        </a>
+        <a href="{% url 'generate' %}" class="flex flex-col items-center text-indigo-300 hover:text-white">
+          <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 19V6l12-2v13" />
+          </svg>
+          <span class="text-xs mt-1">Générer</span>
+        </a>
+        <a href="{% url 'help' %}" class="flex flex-col items-center text-indigo-300 hover:text-white">
+          <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 10h.01M12 14h.01M16 10h.01M9 16v2a2 2 0 002 2h2a2 2 0 002-2v-2" />
+          </svg>
+          <span class="text-xs mt-1">Aide</span>
+        </a>
+        <a href="{% url 'contact' %}" class="flex flex-col items-center text-indigo-300 hover:text-white">
+          <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 10a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span class="text-xs mt-1">Contact</span>
+        </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" title="Se déconnecter" class="flex flex-col items-center text-red-400 hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
+          </svg>
+          <span class="text-xs mt-1">Déco</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    <script>
+      const toggle = document.getElementById('menu-toggle');
+      const menu = document.getElementById('mobile-menu');
+      toggle.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+      });
+    </script>
+  </nav>
+
+  <!-- CONTENU SPÉCIFIQUE À CHAQUE PAGE -->
+  <main class="p-6">
+    {% block content %}
+    <!-- contenu de la page -->
+    {% endblock %}
+  </main>
+  {% include "footer.html" %}
+</body>
+</html>

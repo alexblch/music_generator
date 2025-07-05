@@ -7,3 +7,5 @@ transformers==4.39.3
 git+https://github.com/facebookresearch/audiocraft#egg=audiocraft
 google-generativeai
 google-cloud-storage
+peft==0.6.2
+pyfluidsynth

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from App.forms import ContactForm
 from App.models import ContactMessage as Contact, MusicGenerated, MidiSentByUsers, FeedBackMusic
-from App.utils import generate_music_from_prompt, send_email, prompt_to_config
+from App.utils import generate_music_from_prompt_batch, send_email, prompt_to_config
 from django.core.files.storage import default_storage
 from django.core.files.storage import FileSystemStorage
 
@@ -90,7 +90,6 @@ def logout(request):
 
 def generate_music(request):
     genai.configure(api_key=os.getenv("VERTEX_API_KEY"))
-    
     context = {}
 
     if request.method == "POST":
@@ -98,32 +97,56 @@ def generate_music(request):
 
         if form_type == "generation":
             prompt = request.POST.get("prompt")
+            if not prompt:
+                context["error"] = "Le prompt ne peut pas être vide."
+                return render(request, 'App/generate.html', context)
+
             config = prompt_to_config(prompt)
-            print(config)
-            generated_music_url = generate_music_from_prompt(str(config))
-            context["generated_music_url"] = generated_music_url
+            if not config:
+                context["error"] = "Erreur dans la génération des paramètres (Gemini)."
+                return render(request, 'App/generate.html', context)
+
+            print("🎯 Config Gemini:", config)
+
+            try:
+                music_group_id, urls, filenames = generate_music_from_prompt_batch(str(config), n=4)
+            except Exception as e:
+                context["error"] = f"Erreur lors de la génération de musique : {str(e)}"
+                return render(request, 'App/generate.html', context)
+
+            # Sauvegarde des musiques générées
+            for fname in filenames:
+                MusicGenerated.objects.create(
+                    prompt=prompt,
+                    music_group_id=music_group_id,
+                    generation_config=config,
+                    filename=fname
+                )
+
+            context.update({
+                "generated_musics": urls,
+                "music_group_id": music_group_id,
+                "prompt": prompt
+            })
 
         elif form_type == "feedback":
             try:
-                print("POST DATA:", request.POST)
-                rate = int(request.POST.get("rating"))
-                print(f"Rate received: {rate}")
-                feedback_text = request.POST.get("feedback")
-                reward = random.uniform(0, 1)
+                music_group_id = request.POST.get("music_group_id")
+                preferred_version = int(request.POST.get("preferred_version"))
 
-                if request.user.is_authenticated:
+                if music_group_id and 0 <= preferred_version <= 3:
                     FeedBackMusic.objects.create(
-                        promptfeed=feedback_text,
-                        rate=rate,
-                        reward=reward
+                        music_group_id=music_group_id,
+                        preferred_version=preferred_version + 1
                     )
                     context["feedback_message"] = "Merci pour votre retour !"
                 else:
-                    context["feedback_message"] = "Vous devez être connecté pour laisser un avis."
+                    context["feedback_message"] = "Feedback invalide ou incomplet."
             except Exception as e:
-                context["feedback_message"] = f"Erreur lors de la soumission du feedback : {str(e)}"
+                context["feedback_message"] = f"Erreur lors du feedback : {str(e)}"
 
     return render(request, 'App/generate.html', context)
+
 
 
 
