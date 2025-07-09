@@ -4,3 +4,4 @@ bdd/
 App/media/
 secrets/gcs-creds.json
 media/
+App/tmp/
