@@ -2,7 +2,7 @@
 {% block title %}Générer de la Musique{% endblock %}
 
 {% block content %}
-<div class="px-4 flex flex-col space-y-20">
+<div class="px-4">
 
   <!-- DEBUG CONTEXTE -->
   <div class="bg-yellow-900 text-white text-sm p-4 rounded mt-6 mb-8">
@@ -55,15 +55,12 @@
           </button>
         </div>
       </form>
-	<div id="loading-message" class="hidden text-cyan-400 text-xl font-bold animate-pulse mt-4">
-  		Chargement en cours...
-	</div>
     </div>
   </div>
 
   <!-- AFFICHAGE DES MUSIQUES GÉNÉRÉES -->
   {% if zipped_musics %}
-<div class="flex flex-col items-center mt-12">
+<div class="flex justify-center mt-12">
   <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-2xl text-center">
     <h2 class="text-3xl font-bold text-white mb-6">Choisissez votre version préférée</h2>
     <form method="POST" action="{% url 'generate' %}" class="space-y-6">
@@ -75,7 +72,7 @@
         {% for wav, mid in zipped_musics %}
         <div class="bg-[#0f172a] border border-gray-600 rounded-xl p-4 flex flex-col space-y-2">
           <div class="flex items-center space-x-4">
-            <input type="radio" name="preferred_version" value="{{ forloop.counter }}" required>
+            <input type="radio" name="preferred_version" value="{{ forloop.counter0 }}" required>
             <audio controls class="w-full">
               <source src="{{ wav }}" type="audio/wav">
               Votre navigateur ne supporte pas la lecture audio.
@@ -106,16 +103,4 @@
   {% endif %}
 
 </div>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const form = document.querySelector('form[action="{% url "generate" %}"]');
-    const loadingMessage = document.getElementById("loading-message");
-
-    if (form && loadingMessage) {
-      form.addEventListener("submit", function () {
-        loadingMessage.classList.remove("hidden");
-      });
-    }
-  });
-</script>
 {% endblock %}

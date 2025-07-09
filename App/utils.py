@@ -19,6 +19,9 @@ import logging
 import numpy as np 
 from tqdm import tqdm
 import random
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import wave
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -315,3 +318,61 @@ def run_generation(
         for i in range(len(seqs)): seqs[i].extend(block[i].tolist())
     logger.info("Generation complete.")
     return seqs
+
+
+
+def synthesize_audios_django(
+    midi_paths: list[str],
+    synth,
+    pool,
+    duration_s: int,
+    output_dir: str
+) -> list[str]:
+    """
+    Prend une liste de chemins MIDI locaux,
+    synthétise en WAV (tronçonnage à duration_s secondes),
+    écrit dans output_dir, et renvoie la liste de fichiers WAV générés.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    futures = {}
+    for idx, path in enumerate(midi_paths, start=1):
+        with open(path, 'rb') as f:
+            midi_bytes = f.read()
+        score     = midi2score(midi_bytes)
+        midi_opus = score2opus(score)
+        futures[pool.submit(synth.synthesis, midi_opus)] = idx
+
+    wav_filenames = []
+    for fut in as_completed(futures):
+        idx = futures[fut]
+        pcm = fut.result()       # np.ndarray
+        sr  = synth.sample_rate  # e.g. 44100
+
+        # Tronçonnage à duration_s secondes
+        max_samples = int(duration_s * sr)
+        pcm = pcm[:max_samples] if pcm.ndim == 1 else pcm[:max_samples, :]
+
+        # Passage en int16 si nécessaire
+        if pcm.dtype == np.float32:
+            pcm = (pcm * np.iinfo(np.int16).max).astype(np.int16)
+
+        # Nombre de canaux
+        if pcm.ndim == 1:
+            nchannels = 1
+        else:
+            # transpose si besoin
+            if pcm.shape[0] < pcm.shape[1]:
+                pcm = pcm.T
+            nchannels = pcm.shape[1]
+
+        wav_name = f"out_{idx}.wav"
+        wav_path = os.path.join(output_dir, wav_name)
+        with wave.open(wav_path, 'wb') as wf:
+            wf.setnchannels(nchannels)
+            wf.setsampwidth(2)
+            wf.setframerate(sr)
+            wf.writeframes(pcm.tobytes())
+
+        wav_filenames.append(wav_name)
+
+    return wav_filenames
