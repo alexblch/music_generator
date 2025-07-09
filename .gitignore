@@ -3,3 +3,4 @@ bdd/
 .env
 App/media/
 secrets/gcs-creds.json
+media/
