@@ -376,3 +376,16 @@ def synthesize_audios_django(
         wav_filenames.append(wav_name)
 
     return wav_filenames
+
+
+def upload_to_gcs(local_path, bucket_name, blob_name):
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    blob.upload_from_filename(local_path)
+
+    
+    
+def extract_index(filename):
+    match = re.search(r"out_(\d+)\.wav", filename)
+    return int(match.group(1)) if match else float('inf')

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from App.forms import ContactForm
 from App.models import ContactMessage as Contact, MusicGenerated, MidiSentByUsers, FeedBackMusic
-from App.utils import send_email, prompt_to_config,  get_params_from_prompt, download_from_gcs, run_generation, download_best_model_gcs, synthesize_audios_django
+from App.utils import send_email, prompt_to_config,  get_params_from_prompt, download_from_gcs, run_generation, download_best_model_gcs, synthesize_audios_django, upload_to_gcs, extract_index
 from django.core.files.storage import default_storage
 from django.core.files.storage import FileSystemStorage
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -243,12 +243,42 @@ def generate_music(request):
         elif form_type == "feedback":
             music_group_id = request.POST.get("music_group_id")
             try:
-                preferred_version = int(request.POST.get("preferred_version"))
+                preferred_version = int(request.POST.get("preferred_version"))  # Index dans la liste affichée
+                print(f"Version préférée : {preferred_version}")
+
+                # Regénère les mêmes listes que côté génération
+                output_dir = os.path.join(settings.MEDIA_ROOT, "outputs")
+                midi_paths = sorted(
+                    [os.path.join(output_dir, f) for f in os.listdir(output_dir) if f.endswith(".mid")],
+                    key=extract_index
+                )
+                wav_filenames = sorted(
+                    [f for f in os.listdir(os.path.join(settings.MEDIA_ROOT, "audio")) if f.endswith(".wav")],
+                    key=extract_index
+                )
+
+                # Protection : vérifier que l'index est dans la bonne plage
+                if preferred_version < 1 or preferred_version > len(midi_paths):
+                    raise ValueError(f"Index préféré invalide : {preferred_version}")
+
+                # Récupère le chemin MIDI exact sélectionné par l'utilisateur
+                midi_path = midi_paths[preferred_version - 1]
+                midi_filename = os.path.basename(midi_path)
+
+                # Enregistrement du feedback
                 FeedBackMusic.objects.create(
                     music_group_id=music_group_id,
-                    preferred_version=preferred_version + 1
+                    preferred_version=preferred_version
                 )
+
+                # Upload vers GCS
+                timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+                blob_name = f"data/batch/{midi_filename.replace('.mid','')}_{timestamp}.mid"
+                bucket_name = "pastorageesgi"
+                upload_to_gcs(midi_path, bucket_name, blob_name)
+
                 context["feedback_message"] = "Merci pour votre retour !"
+
             except Exception as e:
                 context["feedback_message"] = f"Erreur lors du feedback : {e}"
 
