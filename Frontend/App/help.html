@@ -4,6 +4,7 @@
 {% block title %}Nous aider{% endblock %}
 
 {% block content %}
+  {% if user.is_authenticated %}
 <div class="flex justify-center mt-16 px-4">
   <div class="bg-[#1e293b] shadow-lg rounded-xl p-8 w-full max-w-md text-center">
     <h1 class="text-2xl font-bold text-white mb-4">Aidez-nous à enrichir notre modèle !</h1>
@@ -125,4 +126,17 @@
     });
   });
 </script>
+{% else %}
+
+    <div class="flex justify-center mt-32 px-4">
+<div class="bg-red-100 text-red-800 p-6 rounded-xl shadow-md text-center w-full max-w-md">
+<h2 class="text-2xl font-bold mb-2">🔒 Accès réservé</h2>
+<p class="text-md">Connectez-vous pour nous aider !!</p>
+<a class="inline-block mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition" href="{% url 'login' %}">
+          Se connecter
+        </a>
+</div>
+</div>
+
+  {% endif %}
 {% endblock %}

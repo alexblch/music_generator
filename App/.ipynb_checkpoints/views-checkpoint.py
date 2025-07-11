@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from App.forms import ContactForm
 from App.models import ContactMessage as Contact, MusicGenerated, MidiSentByUsers, FeedBackMusic
-from App.utils import send_email, prompt_to_config,  get_params_from_prompt, download_from_gcs, run_generation, download_best_model_gcs, synthesize_audios_django, upload_to_gcs, extract_index
+from App.utils import send_email, prompt_to_config,  get_params_from_prompt, download_from_gcs, run_generation, download_best_model_gcs, synthesize_audios_django, upload_to_gcs, extract_index, lire_fichier_gcs, get_accuracy_from_gcs, download_config_gcs
 from django.core.files.storage import default_storage
 from django.core.files.storage import FileSystemStorage
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -123,8 +123,24 @@ def logout(request):
 
 def generate_music(request):
     client = OpenAI(api_key=os.getenv('OPEN_API_KEY'))
-    context = {}
 
+    bucket_name = "pastorageesgi"
+    path_countdown = "countdown.txt"
+    countdown = -1
+
+    try:
+        countdown = int(lire_fichier_gcs(bucket_name, path_countdown))
+    except Exception as e:
+        print(f"Erreur lecture countdown.txt sur GCS : {e}")
+
+    context = {"countdown": countdown}
+
+    path_accuracy = "models/bestmodel/stat.txt"
+    try:
+        accuracy = get_accuracy_from_gcs(bucket_name, path_accuracy)
+        context.update({"accuracy": accuracy})
+    except Exception as e:
+        print(f"Erreur lecture accuracy sur GCS : {e}")
     if request.method == "POST":
         form_type = request.POST.get("form_type")
 
@@ -152,21 +168,45 @@ def generate_music(request):
                 context["error"] = "Erreur dans la génération des paramètres (Gemini)."
                 return render(request, 'App/generate.html', context)
             params['duration_s'] = duration_s
+            print(params['duration_s'])
+            
+            
+            ckpt_path = "/home/jupyter/music_generator/App/tmp/model.safetensors"  # modèle déjà présent
+            cfg_path  = download_config_gcs()  # on télécharge seulement la config
 
-            # 4) Télécharger et charger le modèle
-            tmpdir = 'App/tmp/midi_model'
-            os.makedirs(tmpdir, exist_ok=True)
-            ckpt_path = download_best_model_gcs()
-            download_from_gcs(bucket.name, CONFIG_BLOB, f"{tmpdir}/config.json")
-
-            cfg   = MIDIModelConfig.from_json_file(f"{tmpdir}/config.json")
+            cfg   = MIDIModelConfig.from_json_file(cfg_path)
             model = MIDIModel(cfg)
-            state = safe_load_file(ckpt_path)
+
+            torch_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            device_str   = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+
+            # Charger les poids avec safetensors
+            state = safe_load_file(ckpt_path, device=device_str)
             model.load_state_dict(state, strict=False)
-            model.to(device)
+
+            # Suite
+            model.to(torch_device)
             model.eval()
             tokenizer = model.tokenizer
 
+        
+            
+            # 4) Télécharger et charger le modèle
+            """tmpdir = 'App/tmp/midi_model'
+            os.makedirs(tmpdir, exist_ok=True)
+            ckpt_path = download_best_model_gcs()
+            download_from_gcs(bucket_name, CONFIG_BLOB, f"{tmpdir}/config.json")
+            
+            cfg   = MIDIModelConfig.from_json_file(f"{tmpdir}/config.json")
+            model = MIDIModel(cfg)
+            state = safe_load_file(ckpt_path)
+            model.load_state_dict(state, strict=False)"""
+            
+            
+            """model.to(device)
+            model.eval()
+            tokenizer = model.tokenizer"""
+            
             # 5) Préparer le synthétiseur + thread pool
             sf    = hf_hub_download('skytnt/midi-model','soundfont.sf2')
             synth = MidiSynthesizer(sf)
@@ -274,7 +314,6 @@ def generate_music(request):
                 # Upload vers GCS
                 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
                 blob_name = f"data/batch/{midi_filename.replace('.mid','')}_{timestamp}.mid"
-                bucket_name = "pastorageesgi"
                 upload_to_gcs(midi_path, bucket_name, blob_name)
 
                 context["feedback_message"] = "Merci pour votre retour !"

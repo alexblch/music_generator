@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure--b@j7)_r5brd49kl5+k1r_qx6_w2h$=0bi7pg(&tdkk6pucg5p
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [os.environ.get("EXTERNAL_IP", "127.0.0.1")]
 
 
 # Application definition

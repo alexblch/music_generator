@@ -2,115 +2,136 @@
 {% block title %}Générer de la Musique{% endblock %}
 
 {% block content %}
-<div class="px-4 flex flex-col space-y-20">
-
-  <!-- DEBUG CONTEXTE -->
-  <div class="bg-yellow-900 text-white text-sm p-4 rounded mt-6 mb-8">
-    <strong>DEBUG CONTEXTE :</strong><br>
-    <b>mid_urls:</b> {{ mid_urls }}<br>
-    <b>wav_urls:</b> {{ wav_urls }}<br>
-    <b>music_group_id:</b> {{ music_group_id }}<br>
-    <b>prompt:</b> {{ prompt }}<br>
-    <b>feedback_message:</b> {{ feedback_message }}
+<div class="px-4 flex flex-col space-y-20 items-center">
+<!-- DEBUG CONTEXTE -->
+<div class="bg-yellow-900 text-white text-sm p-4 rounded mt-6 mb-8 w-full max-w-4xl">
+<strong>DEBUG CONTEXTE :</strong><br/>
+<b>mid_urls:</b> {{ mid_urls }}<br/>
+<b>wav_urls:</b> {{ wav_urls }}<br/>
+<b>music_group_id:</b> {{ music_group_id }}<br/>
+<b>prompt:</b> {{ prompt }}<br/>
+<b>feedback_message:</b> {{ feedback_message }}
   </div>
+<!-- FORMULAIRE + CHARGEMENT + FEEDBACK + METRIQUES -->
+<div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-4xl md:max-w-2xl text-center mt-10 md:mt-20">
+<h2 class="text-3xl font-bold text-white mb-6">Générer votre musique</h2>
 
-  <!-- FORMULAIRE DE PROMPT -->
-  <div class="flex justify-center">
-    <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-xl text-center">
-      <h2 class="text-3xl font-bold text-white mb-6">Générer votre musique</h2>
-      {% if error %}
-        <p class="text-red-400">{{ error }}</p>
-      {% endif %}
-      <form method="POST" action="{% url 'generate' %}" class="mt-6">
-        {% csrf_token %}
-	<div class="mt-4 text-white text-left">
-  	<label for="duration" class="block text-sm mb-1">Durée de la musique (en secondes) :</label>
-  	<input
-    		type="range"
-    		id="duration"
-    		name="duration"
-    		min="10"
-    		max="180"
-    		value="30"
-    		class="w-full"
-    		oninput="durationOutput.value = duration.value"
-  	/>
-  	<div class="text-right text-sm mt-1">
-    		Durée : <output name="durationOutput" id="durationOutput">30</output> sec
-  	</div>
-        <input type="hidden" name="form_type" value="generation">
-        <div class="flex items-center bg-[#0f172a] border border-gray-600 rounded-full px-4 py-2 shadow-sm">
-          <input
-            type="text"
-            name="prompt"
-            id="prompt"
-            placeholder="Décrivez la musique à générer..."
-            class="flex-grow bg-transparent text-white placeholder-gray-400 focus:outline-none"
-            required
-          />
-          <button type="submit" title="Générer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-400 hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      </form>
-	<div id="loading-message" class="hidden text-cyan-400 text-xl font-bold animate-pulse mt-4">
-  		Chargement en cours...
-	</div>
-    </div>
-  </div>
+    {% if error %}
+      <p class="text-red-400">{{ error }}</p>
+    {% endif %}
 
-  <!-- AFFICHAGE DES MUSIQUES GÉNÉRÉES -->
-  {% if zipped_musics %}
-<div class="flex flex-col items-center mt-12">
-  <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-2xl text-center">
-    <h2 class="text-3xl font-bold text-white mb-6">Choisissez votre version préférée</h2>
-    <form method="POST" action="{% url 'generate' %}" class="space-y-6">
+    <!-- FORMULAIRE DE PROMPT -->
+<form action="{% url 'generate' %}" class="mt-6" method="POST">
       {% csrf_token %}
-      <input type="hidden" name="form_type" value="feedback">
-      <input type="hidden" name="music_group_id" value="{{ music_group_id }}">
-
-      <div class="grid grid-cols-1 gap-6">
-        {% for wav, mid in zipped_musics %}
-        <div class="bg-[#0f172a] border border-gray-600 rounded-xl p-4 flex flex-col space-y-2">
-          <div class="flex items-center space-x-4">
-            <input type="radio" name="preferred_version" value="{{ forloop.counter }}" required>
-            <audio controls class="w-full">
-              <source src="{{ wav }}" type="audio/wav">
-              Votre navigateur ne supporte pas la lecture audio.
-            </audio>
-          </div>
-          <div class="text-sm text-gray-300 text-left pl-8">
-            <a href="{{ mid }}" class="hover:underline text-indigo-400" download>Télécharger .mid</a> |
-            <a href="{{ wav }}" class="hover:underline text-indigo-400" download>Télécharger .wav</a>
-          </div>
+      <div class="mt-4 text-white text-left">
+<label class="block text-sm mb-1" for="duration">Durée de la musique (en secondes) :</label>
+<input class="w-full" id="duration" max="180" min="10" name="duration" oninput="durationOutput.value = duration.value" type="range" value="30"/>
+<div class="text-right text-sm mt-1">
+          Durée : <output id="durationOutput" name="durationOutput">30</output> sec
         </div>
-        {% endfor %}
-      </div>
-
-      <div class="mt-6 text-right">
-        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">
-          Envoyer mon choix
-        </button>
-      </div>
-    </form>
-  </div>
 </div>
+<input name="form_type" type="hidden" value="generation"/>
+<div class="flex items-center bg-[#0f172a] border border-gray-600 rounded-full px-4 py-2 shadow-sm mt-4">
+<input class="flex-grow bg-transparent text-white placeholder-gray-400 focus:outline-none" id="prompt" name="prompt" placeholder="Décrivez la musique à générer..." required="" type="text">
+<button title="Générer" type="submit">
+<svg class="h-6 w-6 text-indigo-400 hover:text-indigo-600" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</input></div>
+</form>
+<!-- MESSAGE DE CHARGEMENT -->
+<div class="hidden text-cyan-400 text-xl font-bold animate-pulse mt-4" id="loading-message">
+      Chargement en cours...
+    </div>
+<!-- FEEDBACK -->
+    {% if feedback_message %}
+      <div class="mt-6 text-center text-green-400 text-lg">
+        {{ feedback_message }}
+      </div>
+    {% endif %}
+
+
+  <!-- LISTE DES MUSIQUES GÉNÉRÉES -->
+  {% if zipped_musics %}
+  <div class="flex flex-col items-center mt-12">
+<div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-2xl text-center">
+<h2 class="text-3xl font-bold text-white mb-6">Choisissez votre version préférée</h2>
+<form action="{% url 'generate' %}" class="space-y-6" method="POST">
+        {% csrf_token %}
+        <input name="form_type" type="hidden" value="feedback"/>
+<input name="music_group_id" type="hidden" value="{{ music_group_id }}"/>
+<div class="grid grid-cols-1 gap-6">
+          {% for wav, mid in zipped_musics %}
+          <div class="bg-[#0f172a] border border-gray-600 rounded-xl p-4 flex flex-col space-y-2">
+<div class="flex items-center space-x-4">
+<input name="preferred_version" required="" type="radio" value="{{ forloop.counter }}"/>
+<audio class="w-full max-w-lg md:max-w-2xl mx-auto" controls="">
+<source src="{{ wav }}" type="audio/wav"/>
+                Votre navigateur ne supporte pas la lecture audio.
+              </audio>
+</div>
+<div class="text-sm text-gray-300 text-left pl-8">
+<a class="hover:underline text-indigo-400" download="" href="{{ mid }}">Télécharger .mid</a> |
+              <a class="hover:underline text-indigo-400" download="" href="{{ wav }}">Télécharger .wav</a>
+</div>
+</div>
+          {% endfor %}
+        </div>
+<div class="mt-6 text-right">
+<button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg" type="submit">
+            Envoyer mon choix
+          </button>
+</div>
+</form>
+</div>
+</div>
+  {% endif %}
+	<!-- MÉTRIQUES -->
+<div class="mt-10 text-center">
+<div class="bg-gray-800 text-white p-4 rounded-lg shadow-md inline-block w-full">
+<h3 class="text-lg font-semibold mb-2">🔢 Métriques</h3>
+
+    {% if countdown > 0 %}
+      
+    {% elif countdown == 0 %}
+      
+    {% else %}
+      
+    {% endif %}
+
+    {% if accuracy %}
+      
+    {% endif %}
+  
+{% if countdown > 0 %}
+  <p>
+    Nombre de générations restantes avant réentraînement :
+    <span class="font-bold text-indigo-400">{{ countdown }}</span>
+</p>
+{% elif countdown == 0 %}
+  <p class="text-green-400 font-semibold">
+    Un nouveau modèle est en cours de réentraînement ou vient d'être importé.
+  </p>
+{% else %}
+  <p class="text-red-400 italic">
+    Impossible de récupérer la métrique de génération.
+  </p>
 {% endif %}
 
-  {% if feedback_message %}
-  <div class="mt-6 text-center text-green-400 text-lg">
-    {{ feedback_message }}
-  </div>
-  {% endif %}
-
+{% if accuracy %}
+  <p class="mt-2">
+    Pourcentage de précision du modèle :
+    <span class="font-bold text-emerald-400">{{ accuracy|floatformat:2 }}%</span>
+</p>
+{% endif %}
+</div>
+</div>
 </div>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.querySelector('form[action="{% url "generate" %}"]');
     const loadingMessage = document.getElementById("loading-message");
-
     if (form && loadingMessage) {
       form.addEventListener("submit", function () {
         loadingMessage.classList.remove("hidden");
@@ -119,3 +140,4 @@
   });
 </script>
 {% endblock %}
+</div>

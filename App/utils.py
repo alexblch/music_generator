@@ -57,23 +57,65 @@ def download_from_gcs(bucket_name, blob_name, dest):
     blob.download_to_filename(dest)
 
 def download_best_model_gcs():
-    client = storage.Client()
-    bucket = client.bucket("pastorageesgi")
+    try:
+        client = storage.Client()
+        bucket_name = "pastorageesgi"
+        bucket = client.bucket(bucket_name)
 
-    temp_dir = tempfile.mkdtemp()
+        temp_dir = tempfile.mkdtemp()
+        print(f"📁 Dossier temporaire créé : {temp_dir}")
 
-    # Télécharger model.safetensors
-    model_blob = bucket.blob("models/bestmodel/model.safetensors")
-    local_model_path = os.path.join(temp_dir, "model.safetensors")
-    model_blob.download_to_filename(local_model_path)
+        # Téléchargement du modèle
+        model_blob_path = "models/bestmodel/model.safetensors"
+        model_blob = bucket.blob(model_blob_path)
+        local_model_path = os.path.join(temp_dir, "model.safetensors")
 
-    # Télécharger config.json
-    config_blob = bucket.blob("models/bestmodel/config.json")
-    local_config_path = os.path.join(temp_dir, "config.json")
-    config_blob.download_to_filename(local_config_path)
+        if not model_blob.exists():
+            raise FileNotFoundError(f"❌ Le fichier {model_blob_path} n'existe pas dans {bucket_name}")
+        
+        model_blob.download_to_filename(local_model_path)
+        print(f"✅ Modèle téléchargé vers {local_model_path}")
 
-    print(f"✔️ Modèle & config téléchargés depuis GCS: models/bestmodel/")
-    return local_model_path  # On retourne le chemin vers model.safetensors
+        # Téléchargement de la config
+        config_blob_path = "models/bestmodel/config.json"
+        config_blob = bucket.blob(config_blob_path)
+        local_config_path = os.path.join(temp_dir, "config.json")
+
+        if not config_blob.exists():
+            raise FileNotFoundError(f"❌ Le fichier {config_blob_path} n'existe pas dans {bucket_name}")
+        
+        config_blob.download_to_filename(local_config_path)
+        print(f"✅ Config téléchargée vers {local_config_path}")
+
+        print("✔️ Modèle & config téléchargés depuis GCS.")
+        return local_model_path
+
+    except Exception as e:
+        print(f"🔥 Erreur lors du téléchargement du modèle depuis GCS : {e}")
+        raise e
+
+def download_config_gcs():
+    try:
+        client = storage.Client()
+        bucket_name = "pastorageesgi"
+        bucket = client.bucket(bucket_name)
+
+        config_blob_path = "models/bestmodel/config.json"
+        local_config_path = "/home/jupyter/music_generator/App/tmp/config.json"
+
+        os.makedirs(os.path.dirname(local_config_path), exist_ok=True)
+
+        config_blob = bucket.blob(config_blob_path)
+        if not config_blob.exists():
+            raise FileNotFoundError(f"❌ Le fichier {config_blob_path} n'existe pas dans {bucket_name}")
+
+        config_blob.download_to_filename(local_config_path)
+        print(f"✅ Config téléchargée vers {local_config_path}")
+        return local_config_path
+
+    except Exception as e:
+        print(f"🔥 Erreur lors du téléchargement de la config : {e}")
+        raise e
 
 
 def load_model_from_best_checkpoint(path):
@@ -136,6 +178,33 @@ def get_params_from_prompt(client: OpenAI, prompt: str) -> dict:
     params = json.loads(resp.choices[0].message.function_call.arguments)
     logger.info(f"Received parameters: {params}")
     return params
+
+
+def lire_fichier_gcs(bucket_name, blob_name, credentials_path=None, mode='text'):
+    """
+    Lit un fichier sur GCS et retourne son contenu.
+
+    - bucket_name : nom du bucket GCS
+    - blob_name : chemin du fichier dans le bucket
+    - credentials_path : chemin vers la clé .json du compte de service (facultatif si config déjà faite)
+    - mode : 'text' pour str ou 'binary' pour bytes
+    """
+    if credentials_path:
+        client = storage.Client.from_service_account_json(credentials_path)
+    else:
+        client = storage.Client()
+
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+
+    if mode == 'text':
+        contenu = blob.download_as_text()
+    elif mode == 'binary':
+        contenu = blob.download_as_bytes()
+    else:
+        raise ValueError("Mode non supporté. Utilise 'text' ou 'binary'.")
+
+    return contenu
 
 
 def extract_as_dict(text):
@@ -389,3 +458,27 @@ def upload_to_gcs(local_path, bucket_name, blob_name):
 def extract_index(filename):
     match = re.search(r"out_(\d+)\.wav", filename)
     return int(match.group(1)) if match else float('inf')
+
+def get_accuracy_from_gcs(bucket_name, blob_name, credentials_path=None):
+    """Lit un fichier texte GCS et extrait val/acc en float."""
+    
+    if credentials_path:
+        client = storage.Client.from_service_account_json(credentials_path)
+    else:
+        client = storage.Client()
+
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    contenu = blob.download_as_text()
+
+    # Parcours ligne par ligne pour trouver celle contenant "val/acc"
+    for line in contenu.splitlines():
+        if "val/acc" in line:
+            try:
+                # Extrait la valeur après ':'
+                value = float(line.split(":")[1].strip())
+                return value
+            except (IndexError, ValueError):
+                raise ValueError("Impossible d'extraire val/acc correctement.")
+    
+    raise ValueError("val/acc non trouvé dans le fichier.")
