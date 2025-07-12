@@ -101,7 +101,7 @@ def download_config_gcs():
         bucket = client.bucket(bucket_name)
 
         config_blob_path = "models/bestmodel/config.json"
-        local_config_path = "/home/jupyter/music_generator/App/tmp/config.json"
+        local_config_path = "App/tmp/config.json"
 
         os.makedirs(os.path.dirname(local_config_path), exist_ok=True)
 

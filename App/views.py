@@ -138,7 +138,7 @@ def generate_music(request):
     path_accuracy = "models/bestmodel/stat.txt"
     try:
         accuracy = get_accuracy_from_gcs(bucket_name, path_accuracy)
-        context.update({"accuracy": accuracy})
+        context.update({"accuracy": accuracy * 100})
     except Exception as e:
         print(f"Erreur lecture accuracy sur GCS : {e}")
     if request.method == "POST":
@@ -171,7 +171,7 @@ def generate_music(request):
             print(params['duration_s'])
             
             
-            ckpt_path = "/home/jupyter/music_generator/App/tmp/model.safetensors"  # modèle déjà présent
+            ckpt_path = "App/tmp/model.safetensors"  # modèle déjà présent
             cfg_path  = download_config_gcs()  # on télécharge seulement la config
 
             cfg   = MIDIModelConfig.from_json_file(cfg_path)

@@ -5,3 +5,4 @@ App/media/
 secrets/gcs-creds.json
 media/
 App/tmp/
+nginx/default.conf

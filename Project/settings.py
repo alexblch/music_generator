@@ -30,8 +30,30 @@ SECRET_KEY = 'django-insecure--b@j7)_r5brd49kl5+k1r_qx6_w2h$=0bi7pg(&tdkk6pucg5p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# Autoriser uniquement les connexions HTTPS
+SECURE_SSL_REDIRECT = False  # Désactive la redirection dans Django
 
-ALLOWED_HOSTS = [os.environ.get("EXTERNAL_IP", "127.0.0.1")]
+# Sécurise les cookies de session et CSRF
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# HSTS (HTTP Strict Transport Security) – optionnel mais recommandé
+SECURE_HSTS_SECONDS = 31536000  # 1 an
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://promptune.online",
+    "https://www.promptune.online",
+]
+
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "promptune.online",
+    "www.promptune.online",
+]
+
 
 
 # Application definition

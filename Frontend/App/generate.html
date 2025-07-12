@@ -4,14 +4,16 @@
 {% block content %}
 <div class="px-4 flex flex-col space-y-20 items-center">
 <!-- DEBUG CONTEXTE -->
+<!-- 
 <div class="bg-yellow-900 text-white text-sm p-4 rounded mt-6 mb-8 w-full max-w-4xl">
-<strong>DEBUG CONTEXTE :</strong><br/>
-<b>mid_urls:</b> {{ mid_urls }}<br/>
-<b>wav_urls:</b> {{ wav_urls }}<br/>
-<b>music_group_id:</b> {{ music_group_id }}<br/>
-<b>prompt:</b> {{ prompt }}<br/>
-<b>feedback_message:</b> {{ feedback_message }}
-  </div>
+  <strong>DEBUG CONTEXTE :</strong><br/>
+  <b>mid_urls:</b> {{ mid_urls }}<br/>
+  <b>wav_urls:</b> {{ wav_urls }}<br/>
+  <b>music_group_id:</b> {{ music_group_id }}<br/>
+  <b>prompt:</b> {{ prompt }}<br/>
+  <b>feedback_message:</b> {{ feedback_message }}
+</div>
+-->
 <!-- FORMULAIRE + CHARGEMENT + FEEDBACK + METRIQUES -->
 <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-4xl md:max-w-2xl text-center mt-10 md:mt-20">
 <h2 class="text-3xl font-bold text-white mb-6">Générer votre musique</h2>
@@ -94,7 +96,7 @@
 
     {% if countdown > 0 %}
       
-    {% elif countdown == 0 %}
+    {% elif countdown == 200 %}
       
     {% else %}
       
