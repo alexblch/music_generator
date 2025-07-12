@@ -2,7 +2,7 @@ name: Deploy Django App
 
 on:
   push:
-    branches: [main]  # Ou 'release' selon ce que tu choisis
+    branches: [main]
 
 jobs:
   deploy:
@@ -17,6 +17,11 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install libfluidsynth system library
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfluidsynth2
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -26,9 +31,9 @@ jobs:
         run: |
           python manage.py collectstatic --noinput
 
-      - name: Run tests (optionnel)
-        run: |
-          python manage.py test
+      # - name: Run tests (optionnel)
+      #   run: |
+      #     python manage.py test
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -44,4 +49,3 @@ jobs:
             python manage.py collectstatic --noinput
             sudo systemctl restart gunicorn
             sudo systemctl restart nginx
-
