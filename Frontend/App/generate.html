@@ -57,6 +57,26 @@
   <!-- LISTE DES MUSIQUES GÉNÉRÉES -->
   {% if zipped_musics %}
   <div class="flex flex-col items-center mt-12">
+  {% if params %}
+<div class="bg-gray-800 text-white p-6 rounded-lg shadow-md w-full max-w-2xl text-left mt-12">
+  <h3 class="text-xl font-bold text-indigo-400 mb-4">🎼 Prise en compte de la génération</h3>
+  <p class="mb-4 text-sm text-gray-300"><strong>Prompt utilisé :</strong> {{ prompt }}</p>
+  <ul class="list-disc list-inside space-y-1 text-sm">
+    <li><strong>Instruments :</strong> {{ params.instruments|join:", " }}</li>
+    <li><strong>Batterie :</strong> {{ params.drum_kit }}</li>
+    <li><strong>BPM :</strong> {{ params.bpm }}</li>
+    <li><strong>Signature rythmique :</strong> {{ params.time_signature }}</li>
+    <li><strong>Tonalité :</strong> {{ params.key_signature }}</li>
+    <li><strong>Durée :</strong> {{ params.duration_s }} sec</li>
+    <li><strong>Seed :</strong> {{ params.seed }} {% if params.random_seed %}(aléatoire){% endif %}</li>
+    <li><strong>Température :</strong> {{ params.temperature }}</li>
+    <li><strong>Top-p :</strong> {{ params.top_p }}</li>
+    <li><strong>Top-k :</strong> {{ params.top_k }}</li>
+    <li><strong>Contrôleurs MIDI autorisés :</strong> {% if params.allow_cc %}Oui{% else %}Non{% endif %}</li>
+  </ul>
+</div>
+{% endif %}
+
 <div class="bg-[#1e293b] p-10 rounded-lg shadow-md w-full max-w-2xl text-center">
 <h2 class="text-3xl font-bold text-white mb-6">Choisissez votre version préférée</h2>
 <form action="{% url 'generate' %}" class="space-y-6" method="POST">

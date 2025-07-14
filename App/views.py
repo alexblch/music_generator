@@ -277,7 +277,8 @@ def generate_music(request):
             context.update({
                 "zipped_musics": list(zip(wav_urls, mid_urls)),
                 "music_group_id": music_group_id,
-                "prompt": prompt
+                "prompt": prompt,
+                "params": params
             })
 
         elif form_type == "feedback":

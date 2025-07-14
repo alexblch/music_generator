@@ -53,11 +53,6 @@ sudo journalctl -fu gunicorn
 sudo systemctl restart nginx
 ```
 
-## Tests
-
-```bash
-python manage.py test
-```
 
 ## CI/CD avec GitHub Actions
 
